@@ -300,10 +300,30 @@ def load_config():
 
     return config
 
+
+def apply_hard_map(nodes_sorted, hard_map):
+    """应用硬性门槛过滤"""
+    if not hard_map:
+        return nodes_sorted
+    min_speed = hard_map.get("min_speed", 0)
+    max_jitter = hard_map.get("max_jitter", float('inf'))
+    max_latency = hard_map.get("max_latency", float('inf'))
+    filtered = []
+    for node_str, speed, jitter, latency in nodes_sorted:
+        if speed >= min_speed and jitter <= max_jitter and latency <= max_latency:
+            filtered.append((node_str, speed, jitter, latency))
+    return filtered
+
 cfg = load_config()
 USE_GLOBAL_MODE = cfg["USE_GLOBAL_MODE"]
 GLOBAL_TOP_N = cfg["GLOBAL_TOP_N"]
-PER_COUNTRY_TOP_N = cfg["PER_COUNTRY_TOP_N"]
+PER_COUNTRY_TOP_N = cfg.get("PER_COUNTRY_TOP_N", 1)
+PER_COUNTRY_HARD_MAP = cfg.get("PER_COUNTRY_HARD_MAP", {})
+# 如果 PER_COUNTRY_TOP_N 是字典，提取默认值；否则保持为整数
+if isinstance(PER_COUNTRY_TOP_N, dict):
+    PER_COUNTRY_TOP_N_DEFAULT = PER_COUNTRY_TOP_N.get("default", 1)
+else:
+    PER_COUNTRY_TOP_N_DEFAULT = PER_COUNTRY_TOP_N
 BANDWIDTH_CANDIDATES = cfg["BANDWIDTH_CANDIDATES"]
 TCP_PROBES = cfg["TCP_PROBES"]
 MIN_SUCCESS_RATE = cfg["MIN_SUCCESS_RATE"]
@@ -1767,13 +1787,22 @@ def main():
             summary="带宽测速全部失败"
         )
         speed_map = {}
+        # 应用硬性门槛过滤
+        if PER_COUNTRY_HARD_MAP and not USE_GLOBAL_MODE:
+            for country in list(country_nodes.keys()):
+                if country in PER_COUNTRY_HARD_MAP:
+                    hard_map = PER_COUNTRY_HARD_MAP[country]
+                    nodes_sorted = sorted(country_nodes[country], key=lambda x: (-x[2], x[1]))
+                    country_nodes[country] = apply_hard_map(nodes_sorted, hard_map)
+        
         if USE_GLOBAL_MODE:
             final_selected = [node for node, _, _, _ in results[:GLOBAL_TOP_N]]
         else:
             final_selected = []
             for country, nodes in country_nodes.items():
                 nodes_sorted = sorted(nodes, key=lambda x: (-x[2], x[1]))
-                for node_str, _, _ in nodes_sorted[:PER_COUNTRY_TOP_N]:
+                top_n = PER_COUNTRY_TOP_N.get(country, PER_COUNTRY_TOP_N_DEFAULT) if isinstance(PER_COUNTRY_TOP_N, dict) else PER_COUNTRY_TOP_N
+                for node_str, _, _ in nodes_sorted[:top_n]:
                     final_selected.append(node_str)
     else:
         speed_map = {node: speed for node, speed in bw_results}
@@ -1802,7 +1831,8 @@ def main():
             final_selected = []
             for country, items in country_scored.items():
                 items.sort(key=lambda x: x[1], reverse=True)
-                for item in items[:PER_COUNTRY_TOP_N]:
+                top_n = PER_COUNTRY_TOP_N.get(country, PER_COUNTRY_TOP_N_DEFAULT) if isinstance(PER_COUNTRY_TOP_N, dict) else PER_COUNTRY_TOP_N
+                for item in items[:top_n]:
                     final_selected.append(item[0])
             score_dict = {item[0]: item[1] for item in scored_nodes}
             final_selected.sort(key=lambda n: score_dict.get(n, 0), reverse=True)
