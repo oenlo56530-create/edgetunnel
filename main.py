@@ -302,12 +302,15 @@ def load_config():
 
 
 def apply_hard_map(nodes_sorted, hard_map):
-    """应用硬性门槛过滤"""
-    if not hard_map:
-        return nodes_sorted
-    min_speed = hard_map.get("min_speed", 0)
-    max_jitter = hard_map.get("max_jitter", float('inf'))
-    max_latency = hard_map.get("max_latency", float('inf'))
+    """应用硬性门槛过滤（支持全局和各国门槛）"""
+    # 获取各国门槛
+    if hard_map:
+        min_speed = hard_map.get("min_speed", MIN_SPEED_MBPS)
+        max_jitter = hard_map.get("max_jitter", MAX_JITTER_MS)
+    else:
+        min_speed = MIN_SPEED_MBPS
+        max_jitter = MAX_JITTER_MS
+    max_latency = hard_map.get("max_latency", float('inf')) if hard_map else float('inf')
     filtered = []
     for node_str, speed, jitter, latency in nodes_sorted:
         if speed >= min_speed and jitter <= max_jitter and latency <= max_latency:
@@ -319,6 +322,8 @@ USE_GLOBAL_MODE = cfg["USE_GLOBAL_MODE"]
 GLOBAL_TOP_N = cfg["GLOBAL_TOP_N"]
 PER_COUNTRY_TOP_N = cfg.get("PER_COUNTRY_TOP_N", 1)
 PER_COUNTRY_HARD_MAP = cfg.get("PER_COUNTRY_HARD_MAP", {})
+MIN_SPEED_MBPS = cfg.get("MIN_SPEED_MBPS", 0)
+MAX_JITTER_MS = cfg.get("MAX_JITTER_MS", float('inf'))
 # 如果 PER_COUNTRY_TOP_N 是字典，提取默认值；否则保持为整数
 if isinstance(PER_COUNTRY_TOP_N, dict):
     PER_COUNTRY_TOP_N_DEFAULT = PER_COUNTRY_TOP_N.get("default", 1)
