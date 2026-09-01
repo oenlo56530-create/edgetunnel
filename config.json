@@ -1,73 +1,68 @@
 {
-    "_comment": "Cloudflare IP 优选工具配置 - 自定义版本",
+    "description": "Cloudflare 高质量节点筛选器 - 最终配置（已按需求调整）",
+    "version": "3.0",
+
+    "weights": {
+        "speed": 5.0,
+        "jitter": 8.0,
+        "http_latency": 2.0,
+        "tcp_latency": 0.0
+    },
+    "comment_weights": "速度5，抖动8（稳定性优先），HTTP延迟2，TCP延迟忽略",
+
+    "per_country_thresholds": {
+        "SG": {"min_speed_mbps": 100, "max_jitter_ms": 5,  "max_latency_ms": 50},
+        "HK": {"min_speed_mbps": 100, "max_jitter_ms": 5,  "max_latency_ms": 50},
+        "JP": {"min_speed_mbps": 50,  "max_jitter_ms": 10, "max_latency_ms": 200}
+    },
+    "comment_thresholds": "硬性淘汰标准，必须同时满足",
+
+    "per_country_quotas": {
+        "SG": 10,
+        "HK": 10,
+        "JP": 20
+    },
+    "comment_quotas": "按评分从高到低，每个国家最多输出数量",
+
+    "allowed_countries": ["SG", "HK", "JP"],
+
+    "test_params": {
+        "bandwidth_mb": 20,
+        "min_tests": 3,
+        "timeout_sec": 30,
+        "concurrency": 30
+    },
+    "comment_test": "测速文件20MB，测3次，超时30秒，并发30",
+
+    "output": {
+        "format": "text",
+        "file": "ip.txt"
+    },
 
     "USE_GLOBAL_MODE": false,
-    "_comment_USE_GLOBAL_MODE": "false=分国家模式",
-
     "GLOBAL_TOP_N": 40,
-    "_comment_GLOBAL_TOP_N": "全局模式下最终保留的节点数量",
-
-    "PER_COUNTRY_TOP_N": {
-        "JP": 15,
-        "HK": 10,
-        "SG": 10
-    },
-    "_comment_PER_COUNTRY_TOP_N": "分国家模式下每个国家保留的节点数量",
-
+    "PER_COUNTRY_TOP_N": {"SG": 10, "HK": 10, "JP": 20},
     "PER_COUNTRY_HARD_MAP": {
-        "JP": {"min_speed": 50, "max_jitter": 10},
-        "SG": {"min_speed": 50, "max_jitter": 10},
-        "HK": {"min_speed": 40, "max_jitter": 12}
+        "SG": {"min_speed": 100, "max_jitter": 5, "max_latency": 50},
+        "HK": {"min_speed": 100, "max_jitter": 5, "max_latency": 50},
+        "JP": {"min_speed": 50, "max_jitter": 10, "max_latency": 200}
     },
-    "_comment_PER_COUNTRY_HARD_MAP": "各国硬性门槛：min_speed(最低带宽Mbps), max_jitter(最大抖动ms)",
-
-    "MIN_SPEED_MBPS": 30,
-    "_comment_MIN_SPEED_MBPS": "全局最低速度门槛（Mbps）",
-
-    "MAX_JITTER_MS": 15,
-    "_comment_MAX_JITTER_MS": "全局最大抖动门槛（ms）",
 
     "BANDWIDTH_CANDIDATES": 500,
-    "_comment_BANDWIDTH_CANDIDATES": "进入带宽测速的候选节点数",
-
-    "TCP_PROBES": 1,
-    "_comment_TCP_PROBES": "每个节点测试 TCP 连接的次数",
-
+    "TCP_PROBES": 3,
     "MIN_SUCCESS_RATE": 1.0,
-    "_comment_MIN_SUCCESS_RATE": "TCP 最低成功率阈值",
-
-    "TCP_LATENCY_WEIGHT": 0.0,
-    "_comment_TCP_LATENCY_WEIGHT": "TCP延迟在综合排序中的权重",
-
-    "TIMEOUT": 2.0,
-    "_comment_TIMEOUT": "单次 TCP 连接超时时间（秒）",
-
-    "SOCKET_DEFAULT_TIMEOUT": 3,
-    "_comment_SOCKET_DEFAULT_TIMEOUT": "全局 Socket 默认超时（秒）",
+    "TIMEOUT": 30.0,
+    "SOCKET_DEFAULT_TIMEOUT": 30,
 
     "FILTER_COUNTRIES_ENABLED": true,
-    "_comment_FILTER_COUNTRIES_ENABLED": "前置白名单开关",
-
-    "ALLOWED_COUNTRIES": ["JP", "HK", "SG"],
-    "_comment_ALLOWED_COUNTRIES": "前置白名单列表",
-
+    "ALLOWED_COUNTRIES": ["SG", "HK", "JP"],
     "PRE_FILTER_BLOCKED_ENABLED": true,
-    "_comment_PRE_FILTER_BLOCKED_ENABLED": "前置黑名单开关",
-
     "PRE_FILTER_BLOCKED_COUNTRIES": ["CN"],
-    "_comment_PRE_FILTER_BLOCKED_COUNTRIES": "前置屏蔽的国家代码列表",
-
     "PRE_FILTER_PORT_ENABLED": true,
-    "_comment_PRE_FILTER_PORT_ENABLED": "是否在 TCP 测试前过滤端口",
-
     "PRE_FILTER_PORTS": [443, 8443, 2053, 2083, 2087, 2096],
-    "_comment_PRE_FILTER_PORTS": "TCP 测试前允许的端口列表",
 
     "ENABLE_WXPUSHER": false,
-    "_comment_ENABLE_WXPUSHER": "是否启用 WxPusher 微信通知",
-
     "CF_ENABLED": false,
-    "_comment_CF_ENABLED": "是否启用 Cloudflare DNS 更新",
 
     "ADDITIONAL_SOURCES": [
         {"url": "https://zip.cm.edu.kg/all.txt", "enabled": true},
@@ -80,39 +75,21 @@
         {"url": "https://bestcf.pages.dev/entryip/50.txt", "enabled": true}
     ],
 
-    "HTTP_LATENCY_WEIGHT": 3.0,
-    "_comment_HTTP_LATENCY_WEIGHT": "HTTP延迟在综合排序中的权重",
-
-    "JITTER_WEIGHT": 5.0,
-    "_comment_JITTER_WEIGHT": "HTTP延迟抖动在综合排序中的权重",
-
+    "HTTP_LATENCY_WEIGHT": 2.0,
+    "JITTER_WEIGHT": 8.0,
+    "SPEED_WEIGHT": 5.0,
+    "TCP_LATENCY_WEIGHT": 0.0,
     "HTTP_JITTER_SAMPLES": 10,
-    "_comment_HTTP_JITTER_SAMPLES": "HTTP抖动测试次数",
-
-    "SPEED_WEIGHT": 8.0,
-    "_comment_SPEED_WEIGHT": "带宽在综合排序中的权重",
 
     "BANDWIDTH_SIZE_MB": 20.0,
-    "_comment_BANDWIDTH_SIZE_MB": "带宽测速下载文件大小（MB）",
-
-    "BANDWIDTH_TIMEOUT": 15,
-    "_comment_BANDWIDTH_TIMEOUT": "单个节点带宽测速超时（秒）",
-
-    "OUTPUT_FILE": "ip.txt",
-    "_comment_OUTPUT_FILE": "最终结果保存的文件名",
-
-    "GITHUB_SYNC_MAX_RETRIES": 0,
-    "_comment_GITHUB_SYNC_MAX_RETRIES": "GitHub同步最大重试次数（0=禁用）",
+    "BANDWIDTH_TIMEOUT": 30,
+    "BANDWIDTH_WORKERS": 30,
 
     "TEST_AVAILABILITY": true,
-    "_comment_TEST_AVAILABILITY": "是否进行IP可用性二次筛选",
-
     "HTTP_TEST_ENABLED": true,
-    "_comment_HTTP_TEST_ENABLED": "是否进行HTTP检测",
-
     "FORCE_DIRECT": false,
-    "_comment_FORCE_DIRECT": "是否强制所有网络请求直连",
-
     "IP_CALIBRATION_ENABLED": false,
-    "_comment_IP_CALIBRATION_ENABLED": "是否启用IP地区校准"
+
+    "GITHUB_SYNC_MAX_RETRIES": 0,
+    "OUTPUT_FILE": "ip.txt"
 }
