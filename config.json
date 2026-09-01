@@ -1,29 +1,27 @@
 {
-    "description": "Cloudflare 高质量节点筛选器 - 最终配置（已按需求调整）",
-    "version": "3.0",
+    "description": "Cloudflare 筛选器 - 新加坡VPS测试，北京使用（握手快 + 下载快）",
+    "version": "6.0",
 
     "weights": {
-        "speed": 5.0,
-        "jitter": 8.0,
-        "http_latency": 2.0,
-        "tcp_latency": 0.0
+        "speed": 15.0,
+        "tcp_latency": 3.0,
+        "http_latency": 3.0,
+        "jitter": 1.5
     },
-    "comment_weights": "速度5，抖动8（稳定性优先），HTTP延迟2，TCP延迟忽略",
+    "comment_weights": "速度权重15（保证视频/下载带宽），TCP延迟权重4（严抓握手快），HTTP延迟权重3，抖动权重1.5（不卡顿就行）",
 
     "per_country_thresholds": {
-        "SG": {"min_speed_mbps": 100, "max_jitter_ms": 5,  "max_latency_ms": 50},
-        "HK": {"min_speed_mbps": 100, "max_jitter_ms": 5,  "max_latency_ms": 50},
-        "JP": {"min_speed_mbps": 50,  "max_jitter_ms": 10, "max_latency_ms": 200}
+        "SG": {"min_speed_mbps": 100, "max_jitter_ms": 20, "max_latency_ms": 250},
+        "HK": {"min_speed_mbps": 80,  "max_jitter_ms": 25, "max_latency_ms": 300},
+        "JP": {"min_speed_mbps": 50,  "max_jitter_ms": 30, "max_latency_ms": 350}
     },
-    "comment_thresholds": "硬性淘汰标准，必须同时满足",
+    "comment_thresholds": "门槛适当放宽（保障通过率），但权重里延迟惩罚极高，高延迟节点就算通过也会排最后",
 
     "per_country_quotas": {
         "SG": 10,
         "HK": 10,
         "JP": 20
     },
-    "comment_quotas": "按评分从高到低，每个国家最多输出数量",
-
     "allowed_countries": ["SG", "HK", "JP"],
 
     "test_params": {
@@ -32,8 +30,6 @@
         "timeout_sec": 30,
         "concurrency": 30
     },
-    "comment_test": "测速文件20MB，测3次，超时30秒，并发30",
-
     "output": {
         "format": "text",
         "file": "ip.txt"
@@ -43,9 +39,9 @@
     "GLOBAL_TOP_N": 40,
     "PER_COUNTRY_TOP_N": {"SG": 10, "HK": 10, "JP": 20},
     "PER_COUNTRY_HARD_MAP": {
-        "SG": {"min_speed": 100, "max_jitter": 5, "max_latency": 50},
-        "HK": {"min_speed": 100, "max_jitter": 5, "max_latency": 50},
-        "JP": {"min_speed": 50, "max_jitter": 10, "max_latency": 200}
+        "SG": {"min_speed": 100, "max_jitter": 20, "max_latency": 250},
+        "HK": {"min_speed": 80, "max_jitter": 25, "max_latency": 300},
+        "JP": {"min_speed": 50, "max_jitter": 30, "max_latency": 350}
     },
 
     "BANDWIDTH_CANDIDATES": 500,
@@ -56,8 +52,8 @@
 
     "FILTER_COUNTRIES_ENABLED": true,
     "ALLOWED_COUNTRIES": ["SG", "HK", "JP"],
-    "PRE_FILTER_BLOCKED_ENABLED": true,
-    "PRE_FILTER_BLOCKED_COUNTRIES": ["CN"],
+    "PRE_FILTER_BLOCKED_ENABLED": false,
+    "PRE_FILTER_BLOCKED_COUNTRIES": [],
     "PRE_FILTER_PORT_ENABLED": true,
     "PRE_FILTER_PORTS": [443, 8443, 2053, 2083, 2087, 2096],
 
@@ -75,18 +71,18 @@
         {"url": "https://bestcf.pages.dev/entryip/50.txt", "enabled": true}
     ],
 
-    "HTTP_LATENCY_WEIGHT": 2.0,
-    "JITTER_WEIGHT": 8.0,
-    "SPEED_WEIGHT": 5.0,
-    "TCP_LATENCY_WEIGHT": 0.0,
+    "HTTP_LATENCY_WEIGHT": 3.0,
+    "JITTER_WEIGHT": 1.5,
+    "SPEED_WEIGHT": 15.0,
+    "TCP_LATENCY_WEIGHT": 3.0,
     "HTTP_JITTER_SAMPLES": 10,
 
     "BANDWIDTH_SIZE_MB": 20.0,
     "BANDWIDTH_TIMEOUT": 30,
     "BANDWIDTH_WORKERS": 30,
 
-    "TEST_AVAILABILITY": true,
-    "HTTP_TEST_ENABLED": true,
+    "TEST_AVAILABILITY": false,
+    "HTTP_TEST_ENABLED": false,
     "FORCE_DIRECT": false,
     "IP_CALIBRATION_ENABLED": false,
 
