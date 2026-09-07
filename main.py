@@ -1841,8 +1841,10 @@ def main():
                 for item in items[:top_n]:
                     final_selected.append(item[0])
             score_dict = {item[0]: item[1] for item in scored_nodes}
-import random
             final_selected.sort(key=lambda n: score_dict.get(n, 0), reverse=True)
+
+            # 随机打乱，让每次结果不同
+            random.shuffle(final_selected)
 
         print("\n================ 最终优选节点 ================")
         for i, node in enumerate(final_selected, 1):
