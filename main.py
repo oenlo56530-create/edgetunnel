@@ -12,6 +12,7 @@ Cloudflare IP 优选工具 (TCP筛选 + IP可用性二次筛选 + HTTP检测 + c
 修复：节点标签只保留国家代码；token耗尽通知只在真正耗尽时发送
 """
 
+import random
 import requests
 import socket
 import time
@@ -1840,6 +1841,7 @@ def main():
                 for item in items[:top_n]:
                     final_selected.append(item[0])
             score_dict = {item[0]: item[1] for item in scored_nodes}
+import random
             final_selected.sort(key=lambda n: score_dict.get(n, 0), reverse=True)
 
         print("\n================ 最终优选节点 ================")
