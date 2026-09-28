@@ -86,6 +86,6 @@
     "FORCE_DIRECT": false,
     "IP_CALIBRATION_ENABLED": false,
 
-    "GITHUB_SYNC_MAX_RETRIES": 0,
+    "GITHUB_SYNC_MAX_RETRIES": 3,
     "OUTPUT_FILE": "ip.txt"
 }
