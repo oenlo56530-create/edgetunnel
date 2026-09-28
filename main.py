@@ -1836,15 +1836,13 @@ def main():
                     country_scored[country].append(item)
             final_selected = []
             for country, items in country_scored.items():
-                items.sort(key=lambda x: x[1], reverse=True)
+                # 不按速度排序取 Top，而是随机选取
+                random.shuffle(items)
                 top_n = PER_COUNTRY_TOP_N.get(country, PER_COUNTRY_TOP_N_DEFAULT) if isinstance(PER_COUNTRY_TOP_N, dict) else PER_COUNTRY_TOP_N
                 for item in items[:top_n]:
                     final_selected.append(item[0])
-            score_dict = {item[0]: item[1] for item in scored_nodes}
-            final_selected.sort(key=lambda n: score_dict.get(n, 0), reverse=True)
-
-            # 随机打乱，让每次结果不同
-            random.shuffle(final_selected)
+            # 不再按速度排序，保持随机顺序
+            # final_selected.sort(key=lambda n: score_dict.get(n, 0), reverse=True)
 
         print("\n================ 最终优选节点 ================")
         for i, node in enumerate(final_selected, 1):
